@@ -69,7 +69,7 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
             public void handleDataDeleted(String dataPath) throws Exception {
                 MDC.put("destination", destination);
                 mutex.set(false);
-                if (!release && isMine(activeData.getAddress())) {
+                if (!release && activeData != null && isMine(activeData.getAddress())) {
                     // 如果上一次active的状态就是本机，则即时触发一下active抢占
                     initRunning();
                 } else {
@@ -172,8 +172,9 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
             // 检查下nid是否为自己
             boolean result = isMine(activeData.getAddress());
             if (!result) {
-                logger.warn("canal is running in node[{}] , but not in node[{}]", activeData.getCid(),
-                            serverData.getCid());
+                logger.warn("canal is running in node[{}] , but not in node[{}]",
+                    activeData.getCid(),
+                    serverData.getCid());
             }
             return result;
         } catch (ZkNoNodeException e) {
@@ -232,7 +233,7 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
             try {
                 listener.processActiveEnter();
             } catch (Exception e) {
-                logger.error("processSwitchActive failed", e);
+                logger.error("processActiveEnter failed", e);
             }
         }
     }
@@ -242,7 +243,7 @@ public class ServerRunningMonitor extends AbstractCanalLifeCycle {
             try {
                 listener.processActiveExit();
             } catch (Exception e) {
-                logger.error("processSwitchActive failed", e);
+                logger.error("processActiveExit failed", e);
             }
         }
     }

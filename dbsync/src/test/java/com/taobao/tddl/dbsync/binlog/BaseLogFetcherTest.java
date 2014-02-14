@@ -10,7 +10,9 @@ import com.taobao.tddl.dbsync.binlog.event.RowsLogBuffer;
 import com.taobao.tddl.dbsync.binlog.event.RowsLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.RowsQueryLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.TableMapLogEvent;
+import com.taobao.tddl.dbsync.binlog.event.XidLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.TableMapLogEvent.ColumnInfo;
+import com.taobao.tddl.dbsync.binlog.event.mariadb.AnnotateRowsEvent;
 
 public class BaseLogFetcherTest {
 
@@ -29,6 +31,19 @@ public class BaseLogFetcherTest {
                                          event.getHeader().getLogPos() - event.getHeader().getEventLen()));
         System.out.println("sql : " + new String(event.getRowsQuery().getBytes("ISO-8859-1"), charset.name()));
     }
+    
+    protected void parseAnnotateRowsEvent(AnnotateRowsEvent event) throws Exception {
+        System.out.println(String.format("================> binlog[%s:%s]", binlogFileName,
+                                         event.getHeader().getLogPos() - event.getHeader().getEventLen()));
+        System.out.println("sql : " + new String(event.getRowsQuery().getBytes("ISO-8859-1"), charset.name()));
+    }
+    
+    protected void parseXidEvent(XidLogEvent event) throws Exception {
+        System.out.println(String.format("================> binlog[%s:%s]", binlogFileName,
+                                         event.getHeader().getLogPos() - event.getHeader().getEventLen()));
+        System.out.println("xid : " + event.getXid());
+    }
+
 
     protected void parseRowsEvent(RowsLogEvent event) {
         try {
@@ -82,7 +97,11 @@ public class BaseLogFetcherTest {
                 //
             } else {
                 final Serializable value = buffer.getValue();
-                System.out.println(value);
+                if (value instanceof byte[]) {
+                    System.out.println(new String((byte[]) value));
+                } else {
+                    System.out.println(value);
+                }
             }
         }
 
